@@ -26,17 +26,7 @@ class Products1C{
                     else $result['error'][] = $prodActionRes['error'];
                 }
             }
-
-
-            //$prodActionRes = $this->checkProductOrAddNew($dataMassive);
-
-            /*if(!$prodActionRes['result']) $result['error'] = $prodActionRes['error'];
-            else $result['result'] = $prodActionRes['result'];*/
-
-            //$result = $prodActionRes;
-
         }
-
         return $result;
     }
 
@@ -60,11 +50,10 @@ class Products1C{
         //если товар найден то просто обновляем его поля !!! Все, кроме кода из 1С - PROPERTY_ID_V_1C
         if($prodSearchRes[0]['ID'] > 0){
 
-            $result['result']['ID'] = $prodSearchRes[0]['ID'];
-            $result['result']['prod'] = $prodSearchRes[0];
+          /*  $result['result']['ID'] = $prodSearchRes[0]['ID'];
+            $result['result']['prod'] = $prodSearchRes[0];*/
 
             $prodUpdateRows = array(
-
                 'NAME' => $productData['NAME'],
                 'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'], //Все равно при создании не залетает
                 'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'], //Все равно при создании не залетает
@@ -79,11 +68,10 @@ class Products1C{
                     'SLOJNOST_BLUDA_LEVEL' => $productData['DISH_LEVEL'], //Сложность от 1 до 5
                     'ID_V_1C' => $productData['1C_ID'], //ID в 1С //НЕ ОБНОВЯЯЕМ НИ В КОЕМ СЛУЧАЕ!!!
                 ),
-
             );
 
 
-            $result['result']['new_prod_rows'] = $prodUpdateRows;
+            /*$result['result']['new_prod_rows'] = $prodUpdateRows;*/
 
             //обновление товара
             $updPriceRes = $this->updateProduct($prodSearchRes[0]['ID'],$prodUpdateRows);
@@ -96,18 +84,21 @@ class Products1C{
                 $updatePricesArr = array(
                     'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'],
                     'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'],
-                    'PRICE' => $productData['PRICE'],
-                    'CURRENCY' => $productData['CURRENCY'],
+                   /* 'PRICE' => $productData['PRICE'],
+                    'CURRENCY' => $productData['CURRENCY'],*/
                     'WEIGHT' => $productData['WEIGHT'], //ВЕС ШТАТНОЕ!
                 );
 
                 $updatePricesRes = $this->updateProductAndPurchasingPrice($prodSearchRes[0]['ID'],$updatePricesArr);
+
                 if(!$updatePricesRes) $result['error'] .= ' Product '.$prodSearchRes[0]['ID']
                     .' purchasing price, currency, weight were not updated!';
 
-                $result['result']['is_prod_upd'] = $updPriceRes;
-                $result['result']['is_prices_upd'] = $updatePricesRes;
+                /*$result['result']['is_prod_upd'] = $updPriceRes;
+                $result['result']['is_prices_upd'] = $updatePricesRes;*/
 
+                //обновление баз. цены и баз. валюты
+                $this->setBaseCurrency($prodSearchRes[0]['ID'],$productData['PRICE'],$productData['CURRENCY']);
 
                 //обновление остатков на складе
                 $updStoreFields = array(
@@ -118,9 +109,10 @@ class Products1C{
 
                 $updStoreRes = $this->addOrUpdateProductAmountToStore($updStoreFields);
                 if(!$updStoreRes) $result['error'] .= ' Product '.$prodSearchRes[0]['ID'].' store Amount was not updated!';
-                else $result['result'] = $prodSearchRes[0]['ID'].' updated!';
+                //else $result['result'] = $prodSearchRes[0]['ID'].' updated!';
+                else $result['result'] = $productData['1C_ID'].' updated!';
 
-                $result['result']['is_store_upd'] = $updStoreRes;
+              //  $result['result']['is_store_upd'] = $updStoreRes;
             }
 
 
@@ -146,6 +138,15 @@ class Products1C{
                     'ID_V_1C' => $productData['1C_ID'], //ID в 1С //НЕ ОБНОВЯЯЕМ НИ В КОЕМ СЛУЧАЕ!!!
                 ),
             );
+
+            //Если поле картиинки не пустое, то при создании заполняем картинку
+             if(!empty($productData['IMAGE'])){
+                 $newImgId = $this->getIncomeFile($productData['IMAGE']);
+                 $createProdFields['DETAIL_PICTURE'] = $newImgId;
+                 $createProdFields['PREVIEW_PICTURE'] = $newImgId;
+                // $this->log(array($productData['IMAGE'],$createProdFields));
+             }
+
             $createProdResID = $this->createNewProductWithProp($createProdFields); //возвращает ID нов. товара
 
             if(!$createProdResID) $result['error'] .= ' New product'.$productData['1C_ID'].' was not created in Bitrix!';
@@ -155,17 +156,19 @@ class Products1C{
                 $updatePricesArr = array(
                     'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'],
                     'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'],
-                    'PRICE' => $productData['PRICE'],
-                    'CURRENCY' => $productData['CURRENCY'],
+                   /* 'PRICE' => $productData['PRICE'],
+                    'CURRENCY' => $productData['CURRENCY'],*/
                     'WEIGHT' => $productData['WEIGHT'], //ВЕС ШТАТНОЕ!
                 );
 
                 $updatePricesRes = $this->updateProductAndPurchasingPrice($createProdResID,$updatePricesArr);
 
+                //обновление баз. цены и баз. валюты
+                $this->setBaseCurrency($createProdResID,$productData['PRICE'],$productData['CURRENCY']);
+
                 if(!$updatePricesRes) $result['error'] .= ' New product '.$productData['1C_ID']
                     .' purchasing price, currency, weight were not updated!';
                 else{
-
                     $updStoreFields = array(
                         'PRODUCT_ID' => $createProdResID,
                         'STORE_ID' => 1, //у них 1 склад, его ID = 1
@@ -175,7 +178,6 @@ class Products1C{
                     $updStoreRes = $this->addOrUpdateProductAmountToStore($updStoreFields);
                     if(!$updStoreRes) $result['error'] .= 'New product '.$productData['1C_ID'].' store Amount was not updated!';
                     else $result['result'] = $productData['1C_ID'].' imported as '.$createProdResID;
-
                 }
             }
         }
@@ -185,7 +187,7 @@ class Products1C{
 
 
     //метод для поиска в каталоге товаров/списке расписаний по id товара в laravel
-    public function searchProductInBase($arFilter,$arSelect){
+    private function searchProductInBase($arFilter,$arSelect){
 
         //сортировка по ID, новые сверху (на всяк случай)
         $res = CIBlockElement::GetList(Array('ID'=>'DESC'),$arFilter, false, false, $arSelect);
@@ -198,27 +200,30 @@ class Products1C{
     }
 
     //метод добаления нового товара с ценой и свойствами PROPERTY_, возвращает ID созданного товара
-    public function createNewProductWithProp($newProdFields){
+    private function createNewProductWithProp($newProdFields){
         return $newProduct = CCrmProduct::Add($newProdFields);
     }
 
     //обновление полей товара
-    public function updateProduct($prodId,$fields){
+    private function updateProduct($prodId,$fields){
         return $res = CCrmProduct::Update($prodId, $fields);
     }
 
-
     //обновление полей товара
-    public function updateProductAndPurchasingPrice($prodId,$fields){
+    private function updateProductAndPurchasingPrice($prodId,$fields){
         return $res = CCatalogProduct::Update($prodId, $fields);
     }
 
 
     //обновление остатков на складе
-    public function addOrUpdateProductAmountToStore($fields){
+    private function addOrUpdateProductAmountToStore($fields){
         return $res = CCatalogStoreProduct::UpdateFromForm($fields);
     }
 
+    //Пробуем записать правильно Валюту Базовой цены (пока именно она не меняется)
+    private function setBaseCurrency($productId,$basePrice,$baseCurrency){
+        return CPrice::SetBasePrice($productId,$basePrice,$baseCurrency);
+    }
 
     //метод логирования данных
     public function log($data){
@@ -226,9 +231,13 @@ class Products1C{
         file_put_contents($file, print_r($data, true), FILE_APPEND | LOCK_EX);
     }
 
-    //Сюда грузим картинки
-    public function saveFile($path){
-      return $newId = $fid = CFile::SaveFile($path, "/catalog/products");
-    }
+    //Сюда грузим картинки - не пригодился, т.к. конфликтовал и не давал создавать товар;
+    /*public function saveFile($path){
+      return $newId = CFile::SaveFile($path, "/catalog/products");
+    }*/
 
+   // картинки он сохраняет в свою папку и отдает ее ID
+    private function getIncomeFile($foreignPath){
+        return $newId = CFile::MakeFileArray($foreignPath);
+    }
 }
