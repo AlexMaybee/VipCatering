@@ -6,8 +6,8 @@ $url = 'https://my.vipcatering.com.ua/local/lib/1c_product_integration/index.php
 
 $http = new \Bitrix\Main\Web\HttpClient(array($options = null));
 
-$user = '1c_exchange';
-$pass = 'test_2019';
+$user = '';
+$pass = '';
 
 
 $http->setAuthorization($user, $pass);
