@@ -106,6 +106,35 @@ class CustomerSurvey{
     }
 
 
+    //сохранение данных из попап Оценки качества в сделку
+    public function saveCustomerSurveyFieldsInDeal($data){
+        $result = false;
+        $message = '';
+
+        //'UF_CRM_1550567125','UF_CRM_1550567255','UF_CRM_1550567291','UF_CRM_1550567357','UF_CRM_1550567461'
+
+        if(!$data['DEAL_ID']) $message = 'Из окна не пришло ID сделки!';
+        else{
+            $updDealFields = [
+                'UF_CRM_1550567125' => $data['SURVEY_QUALITY'],
+                'UF_CRM_1550567255' => $data['SURVEY_INFLUENCE'],
+                'UF_CRM_1550567291' => $data['SURVEY_RECOMMENDATIONS'],
+                'UF_CRM_1550567357' => date('d.m.Y',strtotime($data['SURVEY_EVENT'])),
+                'UF_CRM_1550567461' => date('d.m.Y',strtotime($data['SURVEY_CALL_CATE'])),
+            ];
+
+            $updDealRes = $this->updateDeal($data['DEAL_ID'],$updDealFields);
+
+            //Продолжить здесь!!!
+           // if()
+
+        }
+
+
+        $this->sentAnswer(['result' => $result, 'message' => $message]);
+    }
+
+
     //ответ в консоль
     private function sentAnswer($answ){
         echo json_encode($answ);
@@ -180,6 +209,32 @@ class CustomerSurvey{
                 'ID' => $arEnum['ID'],
                 'VALUE' => $arEnum['VALUE'],
                 ];
+        }
+        return $res;
+    }
+
+    //обновление новой сделки
+    private function updateDeal($dealID,$fields){
+
+        $answ = array(
+            'result' => false,
+            'error' => '',
+        );
+
+        $entity = new CCrmDeal(true);//true - проверять права на доступ
+
+        $result = $entity->update($dealID,$fields);
+
+        if ($result) {
+            $res = array(
+                'result' =>$result,
+            );
+        }
+        else {
+            $res = array(
+                'result' => false,
+                'error' => $entity->LAST_ERROR,
+            );
         }
         return $res;
     }

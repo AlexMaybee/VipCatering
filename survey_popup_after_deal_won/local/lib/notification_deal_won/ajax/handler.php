@@ -20,3 +20,6 @@ if($_POST['ACTION'] === 'GIVE_ME_DEAL_DATA') $obj->getDealDataOnOpeningDeal($_PO
 
 //Запрос при нажатии кнопки дынных полей сделки и options
 if($_POST['ACTION'] === 'GIVE_ME_SURVEY_AND_OPTIONS_FIELDS') $obj->getDealFieldsAndOptionsOnSurveyButtonClick($_POST['DEAL_ID']);
+
+//Сохранение полей опроса из попап в сделку
+if($_POST['ACTION'] === 'SAVE_CUSTOMER_SURVEY_FIELDS_IN_DEAL') $obj->saveCustomerSurveyFieldsInDeal($_POST['FIELDS']);

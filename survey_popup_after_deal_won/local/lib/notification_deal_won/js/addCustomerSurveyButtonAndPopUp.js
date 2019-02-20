@@ -199,7 +199,8 @@ class CustomerSurvey{
     SurveyPopupValidate(result){
 
         var self = this,
-            errCount = 0;
+            errCount = 0,
+            dataInpt, fields;
 
         $('#SurveyPopup input').css('border-color','#c4c7cc');
         $('#SurveyPopup select').css('border-color','#c4c7cc');
@@ -207,11 +208,13 @@ class CustomerSurvey{
         $('#SurveyPopup .MyPopupError').remove();
 
 
-        var dataInpt = $('#SurveyPopup').serializeArray();
-        var fields = {};
+        dataInpt = $('#SurveyPopup').serializeArray();
+        fields = {};
         $.each(dataInpt, function () {
             fields[this.name] = this.value;
         });
+
+        fields.DEAL_ID = result.DEAL.ID
 
         if(Number(fields.SURVEY_QUALITY) == 0) { //значению 0 соотв. id = 132
            // $('#SURVEY_QUALITY').css({'border-color': 'red'});
@@ -228,10 +231,43 @@ class CustomerSurvey{
         else console.log('Ошибок нет!!!');*/
         if(errCount == 0){
             //отправка данных в php! Доделать завтра!
+            self.sentSurveyPopupDataToPhp(fields);
+            console.log(fields);
         }
 
     }
 
+
+    //отправка данных в php
+    sentSurveyPopupDataToPhp(fields){
+        BX.ajax({
+            method: "POST",
+            url: '/local/lib/notification_deal_won/ajax/handler.php',
+            data: {'FIELDS':fields,'ACTION':'SAVE_CUSTOMER_SURVEY_FIELDS_IN_DEAL'},
+            dataType: "json",
+            onsuccess: function (data) {
+
+                console.log(data);
+
+                /*if(data.result.DEAL != false && data.result.QUALITY_OPTIONS != false){
+                    self.surveyPopup(data.result);
+                }
+                else{
+                    console.log(data.message);
+                    //декативация кнопки
+                    for(var i=0; i<document.getElementsByClassName('make_survey_button').length; i++){
+                        document.getElementsByClassName('make_survey_button')[i].style.pointerEvent = 'none';
+                        document.getElementsByClassName('make_survey_button')[i].style.opacity = '0.5';
+                    }
+                }*/
+
+
+            }
+        });
+    }
+
+
+    //Вывод ошибок: id элемента ДОМ; текст ошибки; флаг true, если ошибку нужно вывести под родительским элементом
     errorCreate(domElemId,text,parentEl){
         var selectedElem = document.getElementById(domElemId);
         var error = document.createElement('div');
@@ -242,6 +278,5 @@ class CustomerSurvey{
         error.style = "color:red;font-weight:600;margin:10px 0;";
         parentEl == false ? selectedElem.after(error) : selectedElem.closest('.crm-entity-widget-content-block').after(error);
     }
-
 
 }
