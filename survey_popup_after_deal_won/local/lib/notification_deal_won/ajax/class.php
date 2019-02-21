@@ -71,11 +71,15 @@ class CustomerSurvey{
 
             //Заполнение 2-х полей с датами и переформатирование дат для вставки в input
             !empty($result['DEAL']['UF_CRM_1550567357'])
-                ? $result['DEAL']['UF_CRM_1550567357'] = date('Y-m-d',strtotime($result['DEAL']['UF_CRM_1550567357']))
-                : $result['DEAL']['UF_CRM_1550567357'] = date('Y-m-d',strtotime('now'));
+                //Это если поле type=date, чтобы вставлять значения в него
+                /*? $result['DEAL']['UF_CRM_1550567357'] = date('Y-m-d',strtotime($result['DEAL']['UF_CRM_1550567357']))
+                : $result['DEAL']['UF_CRM_1550567357'] = date('Y-m-d',strtotime('now'));*/
+                ? $result['DEAL']['UF_CRM_1550567357'] = date('d.m.Y',strtotime($result['DEAL']['UF_CRM_1550567357']))
+                : $result['DEAL']['UF_CRM_1550567357'] = date('d.m.Y',strtotime('now'));
             !empty($result['DEAL']['UF_CRM_1550567461'])
-                ? $result['DEAL']['UF_CRM_1550567461'] = date('Y-m-d',strtotime($result['DEAL']['UF_CRM_1550567461']))
-                : $result['DEAL']['UF_CRM_1550567461'] = date('Y-m-d',strtotime('now'));
+                //здесь аналогично, как выше!
+                ? $result['DEAL']['UF_CRM_1550567461'] = date('d.m.Y H:i:s',strtotime($result['DEAL']['UF_CRM_1550567461']))
+                : $result['DEAL']['UF_CRM_1550567461'] = date('d.m.Y H:i:s',strtotime('now'));
 
             //Получение options польз. поля сделки типа селект
             $surveyEnumFilter = ["USER_FIELD_NAME" => 'UF_CRM_1550567125'];
@@ -86,8 +90,8 @@ class CustomerSurvey{
                 $selected_val = 141;
 
                 foreach ($surveyEnumRes as $option){
-                    if(!empty($result['DEAL']['SURVEY_QUALITY'])){
-                        if($option['ID'] == $result['DEAL']['SURVEY_QUALITY']){
+                    if(!empty($result['DEAL']['UF_CRM_1550567125'])){
+                        if($option['ID'] == $result['DEAL']['UF_CRM_1550567125']){
                             $result['QUALITY_OPTIONS'] .= '<option value="'.$option['ID'].'" selected="selected">'.$option['VALUE'].'</option>';
                         }
                         else
@@ -120,13 +124,19 @@ class CustomerSurvey{
                 'UF_CRM_1550567255' => $data['SURVEY_INFLUENCE'],
                 'UF_CRM_1550567291' => $data['SURVEY_RECOMMENDATIONS'],
                 'UF_CRM_1550567357' => date('d.m.Y',strtotime($data['SURVEY_EVENT'])),
-                'UF_CRM_1550567461' => date('d.m.Y',strtotime($data['SURVEY_CALL_CATE'])),
+                'UF_CRM_1550567461' => date('d.m.Y H:i:s',strtotime($data['SURVEY_CALL_CATE'])),
             ];
 
             $updDealRes = $this->updateDeal($data['DEAL_ID'],$updDealFields);
 
-            //Продолжить здесь!!!
-           // if()
+            if(!$updDealRes['result']){
+                $message = $updDealRes['error'];
+            }
+            else {
+                $result = $updDealRes['result'];
+                $message = 'Данные опроса успешно сохранены!'.
+                '<br>Редактирование доступно через текущее окно!';
+            }
 
         }
 
@@ -216,7 +226,7 @@ class CustomerSurvey{
     //обновление новой сделки
     private function updateDeal($dealID,$fields){
 
-        $answ = array(
+        $res = array(
             'result' => false,
             'error' => '',
         );

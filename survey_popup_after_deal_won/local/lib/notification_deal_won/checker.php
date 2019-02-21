@@ -11,6 +11,13 @@ $arJsConfig = array(
         // 'css' => '/bitrix/js/custom/main.css',
         // 'rel' => array(),
     ),
+    'deactivateDealSurveyFields' => array(
+        'css' => '/local/lib/notification_deal_won/css/deactivateDealSurveyFields.css',
+    ),
+    'hideClientFromEveryBodyExceptChoser' => array(
+        'js' => '/local/lib/notification_deal_won/js/hideClientFromEveryBodyExceptChoser_JS.js',
+        'css' => '/local/lib/notification_deal_won/css/hideClientFromEveryBodyExceptChoser.css',
+    ),
 );
 
 foreach ($arJsConfig as $ext => $arExt) {
@@ -20,8 +27,30 @@ foreach ($arJsConfig as $ext => $arExt) {
 //Вызов библиотеки
 CUtil::InitJSCore(array('addCustomerSurveyButtonAndPopup'));
 
-/*Подключение файла .js с кодом заполнения элемента списка карты клиента!*/
 
+//подключение стилей для деактивации полей опроса
+$urlLine = $_SERVER['SCRIPT_URI'];
+if(preg_match('/\/crm\/deal\/details\//i',$urlLine)) CUtil::InitJSCore(array('deactivateDealSurveyFields'));
+//echo $urlLine;
+
+//Скрытие клиента + компании из сделок
+AddEventHandler("main", "OnBeforeProlog", "CheckUserBelongingtoChosenGroup", 50);
+function CheckUserBelongingtoChosenGroup()
+{
+   // echo $GLOBALS['USER']->GetID();
+    $object = new EvenDealHandler();
+    $urlLine = $_SERVER['SCRIPT_URI'];
+
+    $isBelongToChosen = $object->checkIfUserIsBelongToChosen($GLOBALS['USER']->GetID());
+    if(!$isBelongToChosen){
+        if(preg_match('/\/crm\/deal\/details\//i',$urlLine)) CUtil::InitJSCore(array('hideClientFromEveryBodyExceptChoser'));
+        if(preg_match('/\/crm\/deal\/category\//i',$urlLine)) CUtil::InitJSCore(array('hideClientFromEveryBodyExceptChoser'));
+        if(preg_match('/\/crm\/deal\/kanban\/category\//i',$urlLine)) CUtil::InitJSCore(array('hideClientFromEveryBodyExceptChoser'));
+    }
+     //print_r($isBelongToChosen);
+}
+
+/*Подключение файла .js с кодом заполнения элемента списка карты клиента!*/
 
 
 //Событие обновления сделки
@@ -72,6 +101,25 @@ class EvenDealHandler{
         }
     }
 
+
+
+
+    //Тест для проверки скрытия контакта и компании из сделки
+    public function checkIfUserIsBelongToChosen($curUserId){
+        $result = false;
+
+        $chosenUsersIds = $this->getUsersFromGroup(36); //Группа, которая видит клиентов в сделках
+        if(count($chosenUsersIds) > 0){
+            in_array($curUserId,$chosenUsersIds) ? $result = true : $result = false ;
+        }
+
+
+        return $result;
+
+    }
+
+
+
     //Получение данных сделки по фильтру
     private function getDealDataByFilter($filter,$select){
         $db_list = CCrmDeal::GetListEx(array('ID' => 'DESC'), $filter, false, false, $select, array()); //получение пользовательских полей сделки по ID
@@ -86,7 +134,7 @@ class EvenDealHandler{
     }
 
     //получение id сотрудников группы по ее ID
-    private function getUsersFromGroup($group_id){
+    public function getUsersFromGroup($group_id){
         $filter = Array("GROUPS_ID"=>$group_id);
         $rsUsers = CUser::GetList(($by="ID"), ($order="asc"), $filter);
         while($arItem = $rsUsers->GetNext())
@@ -99,7 +147,7 @@ class EvenDealHandler{
     }
 
     //создание уведомления справа сверху сотруднику
-    protected function createNotification($note_fields){
+    private function createNotification($note_fields){
         return $mess = CIMMessenger::Add($note_fields);
     }
 
