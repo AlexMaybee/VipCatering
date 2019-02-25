@@ -1672,12 +1672,15 @@ class CrmKanbanComponent extends \CBitrixComponent
 					}
 				}
 
-
+                //mycode
 				//18.02.2019 add Assigned_by to deal after
                 $assigned_by_name = $this->itLogic_getAssignedName($row['ASSIGNED_BY']);
-                $assigned_str = '<br><span style="color: forestgreen">'.$assigned_by_name['LAST_NAME'].' '.$assigned_by_name['NAME'].'</span>';
+                $assigned_str = '<p style="color: forestgreen">'.$assigned_by_name['LAST_NAME'].' '.$assigned_by_name['NAME'].'</p>';
                 //added to str # 1685
 
+                //21.02.2019 hide contact from Kanban for all Except Chosen of 36 group
+                $isUserChosen = $this->checkIfUserIsChosen();
+                if($isUserChosen == false) $row['CONTACT_ID'] = false;
 
 				//add
 				$result[$row['ID']] = array(
@@ -3031,9 +3034,19 @@ class CrmKanbanComponent extends \CBitrixComponent
 		return [];
 	}
 
+	//mycode on str 1677
 	protected function itLogic_getAssignedName($id){
 	    global $USER;
 	    $uM = CUser::GetByID($id);
 	    return $uM_res = $uM->Fetch();
 	}
+
+	//mycode on str 1682
+	protected function checkIfUserIsChosen(){
+        global $USER;
+        $curUserGroups = $USER->GetUserGroupArray();
+        if(in_array(36,$curUserGroups)) return true;
+        else return false;
+
+    }
 }

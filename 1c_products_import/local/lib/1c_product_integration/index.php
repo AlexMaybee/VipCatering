@@ -45,6 +45,10 @@ $data = json_decode(json_encode($data), true);
 
 if($data['action'] == 'export_products'){
     $toGo = $obj->doActionWithProduct($data);
-    //$obj->log($data);
+    $obj->log($data);
     echo json_encode($toGo); //ответ
+}
+else{
+    $obj->log($data);
+    echo json_encode($error = array('error' => 'Request error: wrong request action!'));
 }
