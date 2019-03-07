@@ -62,3 +62,19 @@ function sendTurboSms($phone, $text)
 
 //Функционал отображения кнопки для проведения опроса после выигрыша сделки
 require_once($_SERVER["DOCUMENT_ROOT"] ."/local/lib/notification_deal_won/checker.php");
+
+
+//Функционал отображения доп. кнопки выбора персонала на мероприятие из кастомного компонента-доработки сделки в задачу, которая создается бизнес-процессом.
+/*Подключение файла .js с кодом заполнения элемента списка карты клиента!*/
+$arJsConfig = array(
+    'addButtonforPersonChoose' => array(
+        'js' => '/local/lib/add_personal_button_on_task_page/js/addPersonalButtonOnTask.js',
+    ),
+);
+
+foreach ($arJsConfig as $ext => $arExt) {
+    \CJSCore::RegisterExt($ext, $arExt);
+}
+
+//Вызов библиотеки
+CUtil::InitJSCore(array('addButtonforPersonChoose'));

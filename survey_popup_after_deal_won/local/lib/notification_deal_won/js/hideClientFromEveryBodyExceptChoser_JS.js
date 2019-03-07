@@ -18,7 +18,7 @@ class ShowDealClientsToChosen{
         //скрытие колонки клиента в списке сделок /crm/deal/category/0/
         this.hideClientInDealList();
 
-        //скрытие контакта в канбане
+        //скрытие контакта в канбане - так и не заработало!
         this.hideClientInCanBan(); //crm-kanban-item-contact
 
 
@@ -55,10 +55,10 @@ class ShowDealClientsToChosen{
 
             kanbanList = document.getElementsByClassName('crm-kanban-item-contact');
 
-
-            for(var o= 0; o < kanbanList.length; o++){
+            //Не хочет итерировать, null и все! Хотя кололекцию отдает!
+            /*for(var o= 0; o < kanbanList.length; o++){
                 kanbanList[o].closest('.crm-kanban-item-total').style.display = 'none';
-            }
+            }*/
 
 
             console.log(kanbanList);

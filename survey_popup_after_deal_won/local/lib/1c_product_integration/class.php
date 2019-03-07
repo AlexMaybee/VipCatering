@@ -228,7 +228,7 @@ class Products1C{
     //метод логирования данных
     public function log($data){
         $file = $_SERVER['DOCUMENT_ROOT'].'/products.log';
-        file_put_contents($file, print_r($data, true), FILE_APPEND | LOCK_EX);
+        file_put_contents($file, print_r(array('date' => date('d.m.Y H:i:s'),$data), true), FILE_APPEND | LOCK_EX);
     }
 
     //Сюда грузим картинки - не пригодился, т.к. конфликтовал и не давал создавать товар;

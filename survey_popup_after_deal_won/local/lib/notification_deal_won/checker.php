@@ -33,8 +33,9 @@ $urlLine = $_SERVER['SCRIPT_URI'];
 if(preg_match('/\/crm\/deal\/details\//i',$urlLine)) CUtil::InitJSCore(array('deactivateDealSurveyFields'));
 //echo $urlLine;
 
-//Скрытие клиента + компании из сделок
-AddEventHandler("main", "OnBeforeProlog", "CheckUserBelongingtoChosenGroup", 50);
+//Скрытие клиента + компании из сделок - Включить здесь!
+//AddEventHandler("main", "OnBeforeProlog", "CheckUserBelongingtoChosenGroup", 50);
+
 function CheckUserBelongingtoChosenGroup()
 {
    // echo $GLOBALS['USER']->GetID();
@@ -112,8 +113,7 @@ class EvenDealHandler{
         if(count($chosenUsersIds) > 0){
             in_array($curUserId,$chosenUsersIds) ? $result = true : $result = false ;
         }
-
-
+        
         return $result;
 
     }

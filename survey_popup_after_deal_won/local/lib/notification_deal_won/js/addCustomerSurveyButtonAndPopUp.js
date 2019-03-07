@@ -266,7 +266,7 @@ class CustomerSurvey{
             dataType: "json",
             onsuccess: function (data) {
 
-                console.log(data);
+               // console.log(data);
 
                 //удаляем содердимое и выводим сообщение
                 $('.bx-core-window.bx-core-adm-dialog .bx-core-adm-dialog-content-wrap-inner').empty();
@@ -319,7 +319,7 @@ class CustomerSurvey{
                 }
             }
         }
-        console.log(mass);
+       // console.log(mass);
         if(Number(mass[1]) > 0) mass[1] = Number(mass[1] - 1); //у js нумерация месяца стартует с 0, а у php с 1
         return new Date(mass[2],(mass[1]),mass[0],mass[3],mass[4],mass[5]);
     }
@@ -340,7 +340,7 @@ class CustomerSurvey{
                 }
             }
         }
-        console.log(mass);
+        //console.log(mass);
         if(Number(mass[1]) > 0) mass[1] = Number(mass[1] - 1); //у js нумерация месяца стартует с 0, а у php с 1
         return new Date(mass[2],(mass[1]),mass[0]);
     }
