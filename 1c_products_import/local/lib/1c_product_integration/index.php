@@ -32,6 +32,7 @@ if ($exch1cEnabled)
 }
 CModule::IncludeModule('crm');
 CModule::IncludeModule('iblock');
+CModule::IncludeModule('catalog'); //это для типа цен
 
 
 //Методы!!!

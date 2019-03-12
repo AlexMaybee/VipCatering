@@ -55,18 +55,20 @@ class Products1C{
 
             $prodUpdateRows = array(
                 'NAME' => $productData['NAME'],
-                'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'], //Все равно при создании не залетает
-                'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'], //Все равно при создании не залетает
-                'PRICE' => $productData['PRICE'],
-                'CURRENCY' => $productData['CURRENCY'],
+                'PURCHASING_PRICE' => $productData['PRICE_CATERING'], //Все равно при создании не залетает
+                'PURCHASING_CURRENCY' => 'UAH', //Все равно при создании не залетает
+                'PRICE' => $productData['PRICE_CATERING'],
+                'CURRENCY' => 'UAH',
                 'DESCRIPTION' => $productData['DESCRIPTION'], //Поле пояснения товара вкладки "подробно"
                 'MEASURE' => $productData['MEASURE'], //Ед. измерения, шт.
-                'STORE_AMOUNT' => $productData['STORE_AMOUNT'], //ОСТАТКИ на складе шт
+               // 'STORE_AMOUNT' => $productData['STORE_AMOUNT'], //ОСТАТКИ на складе шт
                 "PROPERTY_VALUES" => array(
                     'NAZVANIE_UA' => $productData['NAME_UA'], //Укр Название
                     'NAZVANIE_EN' => $productData['NAME_EN'], //Eng Название
-                    'SLOJNOST_BLUDA_LEVEL' => $productData['DISH_LEVEL'], //Сложность от 1 до 5
+                   // 'SLOJNOST_BLUDA_LEVEL' => $productData['DISH_LEVEL'], //Сложность от 1 до 5 //Убрано 12.03.2019
                     'ID_V_1C' => $productData['1C_ID'], //ID в 1С //НЕ ОБНОВЯЯЕМ НИ В КОЕМ СЛУЧАЕ!!!
+                    'PRODUCT_ART' => $productData['ARTICUL'], //Арт товара
+                    'PRODUCT_RECIEVED' => $productData['PRODUCT_TO_SYNCHRON'], //Поступил товар Да/Нет
                 ),
             );
 
@@ -79,13 +81,12 @@ class Products1C{
             if(!$updPriceRes) $result['error'] .= 'Product '.$prodSearchRes[0]['ID'].' was found in Bitrix but was not updated!';
             else{
 
+                $result['result'] = $productData['1C_ID'].' was updated!';
 
                 //обновление цен и валют, которые не обновляются методом выше
                 $updatePricesArr = array(
-                    'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'],
-                    'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'],
-                   /* 'PRICE' => $productData['PRICE'],
-                    'CURRENCY' => $productData['CURRENCY'],*/
+                    'PURCHASING_PRICE' => $productData['PRICE_CATERING'],
+                    'PURCHASING_CURRENCY' => 'UAH',
                     'WEIGHT' => $productData['WEIGHT'], //ВЕС ШТАТНОЕ!
                 );
 
@@ -94,13 +95,31 @@ class Products1C{
                 if(!$updatePricesRes) $result['error'] .= ' Product '.$prodSearchRes[0]['ID']
                     .' purchasing price, currency, weight were not updated!';
 
-                /*$result['result']['is_prod_upd'] = $updPriceRes;
-                $result['result']['is_prices_upd'] = $updatePricesRes;*/
-
                 //обновление баз. цены и баз. валюты
                 $this->setBaseCurrency($prodSearchRes[0]['ID'],$productData['PRICE'],$productData['CURRENCY']);
 
-                //обновление остатков на складе
+
+                //Создание/обновление типов цен (3 шт)
+                if($productData['PRICE_CATERING'] > 0){
+                    $catPirceRes = $this->addOrUpdatePriceTypeById($prodSearchRes[0]['ID'],3,$productData['PRICE_CATERING']);
+                    if($catPirceRes) $result['result'] .= ' '.$catPirceRes['result'];
+                    else $result['error'] .= ' '.$catPirceRes['error'];
+                }
+                if($productData['PRICE_FOOD_BOX'] > 0){
+                    $foodBoxRes = $this->addOrUpdatePriceTypeById($prodSearchRes[0]['ID'],4,$productData['PRICE_FOOD_BOX']);
+                    if($foodBoxRes) $result['result'] .= ' '.$foodBoxRes['result'];
+                    else $result['error'] .= ' '.$foodBoxRes['error'];
+                }
+                if($productData['PRICE_PLANNED'] > 0){
+                    $pricePlanned = $this->addOrUpdatePriceTypeById($prodSearchRes[0]['ID'],5,$productData['PRICE_PLANNED']);
+                    if($pricePlanned) $result['result'] .= ' '.$pricePlanned['result'];
+                    else $result['error'] .= ' '.$pricePlanned['error'];
+                }
+                //Создание/обновление типов цен (3 шт)
+
+
+
+             /*   //обновление остатков на складе
                 $updStoreFields = array(
                     'PRODUCT_ID' => $prodSearchRes[0]['ID'],
                     'STORE_ID' => 1, //у них 1 склад, его ID = 1
@@ -110,7 +129,7 @@ class Products1C{
                 $updStoreRes = $this->addOrUpdateProductAmountToStore($updStoreFields);
                 if(!$updStoreRes) $result['error'] .= ' Product '.$prodSearchRes[0]['ID'].' store Amount was not updated!';
                 //else $result['result'] = $prodSearchRes[0]['ID'].' updated!';
-                else $result['result'] = $productData['1C_ID'].' updated!';
+                else $result['result'] .= ' Store amount updated too!';*/
 
               //  $result['result']['is_store_upd'] = $updStoreRes;
             }
@@ -124,18 +143,21 @@ class Products1C{
             //создаем товар
             $createProdFields = array(
                 'NAME' => $productData['NAME'],
-                'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'], //Все равно при создании не залетает
-                'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'], //Все равно при создании не залетает
-                'PRICE' => $productData['PRICE'],
-                'CURRENCY' => $productData['CURRENCY'],
+                'PURCHASING_PRICE' => $productData['PRICE_CATERING'], //Все равно при создании не залетает
+                'PURCHASING_CURRENCY' => 'UAH', //Все равно при создании не залетает
+                'PRICE' => $productData['PRICE_CATERING'],
+                'CURRENCY' => 'UAH',
+
                 'DESCRIPTION' => $productData['DESCRIPTION'], //Поле пояснения товара вкладки "подробно"
                 'MEASURE' => $productData['MEASURE'], //Ед. измерения, шт.
-                'STORE_AMOUNT' => $productData['STORE_AMOUNT'], //ОСТАТКИ на складе шт
+             //   'STORE_AMOUNT' => $productData['STORE_AMOUNT'], //ОСТАТКИ на складе шт
                 "PROPERTY_VALUES" => array(
                     'NAZVANIE_UA' => $productData['NAME_UA'], //Укр Название
                     'NAZVANIE_EN' => $productData['NAME_EN'], //Eng Название
-                    'SLOJNOST_BLUDA_LEVEL' => $productData['DISH_LEVEL'], //Сложность от 1 до 5
+                  //  'SLOJNOST_BLUDA_LEVEL' => $productData['DISH_LEVEL'], //Сложность от 1 до 5 //Убрано 12.03.2019
                     'ID_V_1C' => $productData['1C_ID'], //ID в 1С //НЕ ОБНОВЯЯЕМ НИ В КОЕМ СЛУЧАЕ!!!
+                    'PRODUCT_ART' => $productData['ARTICUL'], //Арт товара
+                    'PRODUCT_RECIEVED' => $productData['PRODUCT_TO_SYNCHRON'], //Поступил товар Да/Нет
                 ),
             );
 
@@ -152,12 +174,12 @@ class Products1C{
             if(!$createProdResID) $result['error'] .= ' New product'.$productData['1C_ID'].' was not created in Bitrix!';
             else{
 
+                $result['result'] = $productData['1C_ID'].' was imported as '.$createProdResID.'!';
+
                 //обновление цен и валют, которые не обновляются методом выше
                 $updatePricesArr = array(
-                    'PURCHASING_PRICE' => $productData['PURCHASING_PRICE'],
-                    'PURCHASING_CURRENCY' => $productData['PURCHASING_CURRENCY'],
-                   /* 'PRICE' => $productData['PRICE'],
-                    'CURRENCY' => $productData['CURRENCY'],*/
+                    'PURCHASING_PRICE' => $productData['PRICE_CATERING'],
+                    'PURCHASING_CURRENCY' => 'UAH',
                     'WEIGHT' => $productData['WEIGHT'], //ВЕС ШТАТНОЕ!
                 );
 
@@ -166,7 +188,31 @@ class Products1C{
                 //обновление баз. цены и баз. валюты
                 $this->setBaseCurrency($createProdResID,$productData['PRICE'],$productData['CURRENCY']);
 
-                if(!$updatePricesRes) $result['error'] .= ' New product '.$productData['1C_ID']
+
+
+                //Создание/обновление типов цен (3 шт)
+                if($productData['PRICE_CATERING'] > 0){
+                    $catPirceRes = $this->addOrUpdatePriceTypeById($createProdResID,3,$productData['PRICE_CATERING']);
+                    if($catPirceRes) $result['result'] .= ' '.$catPirceRes['result'];
+                    else $result['error'] .= ' '.$catPirceRes['error'];
+                }
+                if($productData['PRICE_FOOD_BOX'] > 0){
+                    $foodBoxRes = $this->addOrUpdatePriceTypeById($createProdResID,4,$productData['PRICE_FOOD_BOX']);
+                    if($foodBoxRes) $result['result'] .= ' '.$foodBoxRes['result'];
+                    else $result['error'] .= ' '.$foodBoxRes['error'];
+                }
+                if($productData['PRICE_PLANNED'] > 0){
+                    $pricePlanned = $this->addOrUpdatePriceTypeById($createProdResID,5,$productData['PRICE_PLANNED']);
+                    if($pricePlanned) $result['result'] .= ' '.$pricePlanned['result'];
+                    else $result['error'] .= ' '.$pricePlanned['error'];
+                }
+                //Создание/обновление типов цен (3 шт)
+
+
+
+
+
+               /* if(!$updatePricesRes) $result['error'] .= ' New product '.$productData['1C_ID']
                     .' purchasing price, currency, weight were not updated!';
                 else{
                     $updStoreFields = array(
@@ -176,13 +222,53 @@ class Products1C{
                     );
 
                     $updStoreRes = $this->addOrUpdateProductAmountToStore($updStoreFields);
-                    if(!$updStoreRes) $result['error'] .= 'New product '.$productData['1C_ID'].' store Amount was not updated!';
-                    else $result['result'] = $productData['1C_ID'].' imported as '.$createProdResID;
-                }
+                    if(!$updStoreRes) $result['error'] .= 'New product '.$productData['1C_ID'].' store Amount was not added!';
+                    else $result['result'] .= ' Store Amount was added!';
+                }*/
+
             }
         }
 
         return $result;
+    }
+
+    //метод для проверки и добавления типа цен
+    private function addOrUpdatePriceTypeById($productId,$price_type_id,$price){
+        //Создание типов цен (3 шт)
+        $result = [
+            'result' => false,
+            'error' => false,
+        ];
+
+            //поля для создания/обновления типа цены
+            $priceTypeFields = Array(
+                "PRODUCT_ID" => $productId,
+                "CATALOG_GROUP_ID" => $price_type_id,
+                "PRICE" => $price,
+                "CURRENCY" => "UAH",
+            );
+
+            //проверка, что цена не записана
+            $filter = ["PRODUCT_ID" => $productId,"CATALOG_GROUP_ID" => $price_type_id];
+            $priceTypeRes = $this->getPriceTypeByFilter($filter);
+
+            if($priceTypeRes){
+                //если найден, обновляем
+                $upd = $this->updatePriceType($priceTypeRes['ID'],$priceTypeFields);
+                if($upd) $result['result'] = 'PriceType # '.$price_type_id.' for product '.$productId.' was updated!';
+                else $result['error'] = 'PriceType # '.$price_type_id.' for product '.$productId.' update failed!';
+
+            }
+            else{
+                //иначе создаем (на самом деле заполняем)
+                $add = $this->addPriceType($priceTypeFields);
+                if($add) $result['result'] = 'PriceType # '.$price_type_id.' for product '.$productId.' was added!';
+                else $result['error'] = 'PriceType # '.$price_type_id.' for product '.$productId.' add failed!';
+            }
+
+            return $result;
+
+        //Создание типов цен (3 шт)
     }
 
 
@@ -223,6 +309,24 @@ class Products1C{
     //Пробуем записать правильно Валюту Базовой цены (пока именно она не меняется)
     private function setBaseCurrency($productId,$basePrice,$baseCurrency){
         return CPrice::SetBasePrice($productId,$basePrice,$baseCurrency);
+    }
+
+    //Получение типа цены по ID и фильтру
+    private function getPriceTypeByFilter($filter){
+        $massive = CPrice::GetList(array(),$filter);
+        $arr = $massive->Fetch();
+        if($arr) return $arr;
+        else return false;
+    }
+
+    //Создание типа цены + поля
+    private function addPriceType($fields){
+        return $add = CPrice::add($fields);
+    }
+
+    //Обновление типа цены по ID + поля
+    private function updatePriceType($price_type_id,$fields){
+        return $upd = CPrice::Update($price_type_id,$fields);
     }
 
     //метод логирования данных
