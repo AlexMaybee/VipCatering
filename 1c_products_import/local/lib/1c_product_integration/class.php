@@ -72,6 +72,13 @@ class Products1C{
                 ),
             );
 
+            //Если поле картиинки не пустое, то при создании заполняем картинку
+//            if(!empty($productData['IMAGE'])){
+//                $newImgId = $this->getIncomeFile($productData['IMAGE']);
+//                $prodUpdateRows['DETAIL_PICTURE'] = $newImgId;
+//                $prodUpdateRows['PREVIEW_PICTURE'] = $newImgId;
+//                // $this->log(array($productData['IMAGE'],$createProdFields));
+//            }
 
             /*$result['result']['new_prod_rows'] = $prodUpdateRows;*/
 
