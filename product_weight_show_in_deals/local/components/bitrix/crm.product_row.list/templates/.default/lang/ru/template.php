@@ -1,9 +1,6 @@
 <?
 $MESS["CRM_PRODUCT_ROW_COL_TTL_NAME"] = "Наименование";
 $MESS["CRM_PRODUCT_ROW_COL_TTL_QUANTITY"] = "Кол-во";
-//my custom parametr
-$MESS["CRM_PRODUCT_ROW_COL_TTL_WEIGHT"] = "Вес";
-//my custom parametr
 $MESS["CRM_PRODUCT_ROW_COL_TTL_PRICE"] = "Цена#CURRENCY#";
 $MESS["CRM_PRODUCT_SUM_TOTAL"] = "Общая сумма";
 $MESS["CRM_FF_OK"] = "Выбрать";
@@ -48,4 +45,10 @@ $MESS["CRM_PRODUCT_TAX_INCLUDING"] = "В том числе";
 $MESS["CRM_PRODUCT_ROW_OPEN_PRODUCT_CARD"] = "Открыть карточку товара";
 $MESS["CRM_PRODUCT_ROW_CREATE_PRODUCT"] = "Добавить в каталог";
 $MESS["CRM_PRODUCT_SEARCH_DLG_TITLE"] = "Выбор товаров";
+
+//my custom parametr
+$MESS["CRM_PRODUCT_ROW_COL_TTL_WEIGHT"] = "Вес";
+$MESS["CRM_EATS_ON_ONE_PERSON"] = "Выход еды на 1 персону";
+$MESS["CRM_DRINKS_ON_ONE_PERSON"] = "Выход напитков на 1 персону";
+//my custom parametr
 ?>

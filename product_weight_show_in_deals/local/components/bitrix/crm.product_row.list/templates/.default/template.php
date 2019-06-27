@@ -52,6 +52,10 @@ else if ($arResult['ENABLE_DISCOUNT'])
 	$additionalClasses = " crm-items-list-sale";
 }
 
+//определяем напиток єто или еда - для предложений!!!
+$foodsResult = ['drinks' => false, 'eats' => false];
+
+
 // Product properties
 $arPropUserTypeList = &$arResult['PRODUCT_PROPS_USER_TYPES'];
 $visibleFields =
@@ -654,6 +658,7 @@ $jsEventsManagerId = 'PageEventsManager_'.$arResult['COMPONENT_ID'];
 			$row = $arResult['PRODUCT_ROWS'][$i];
 			$rowID = $rowIdPrefix.strval($i);
 			$productID = intval($row['PRODUCT_ID']);
+
 			$productName = isset($row['PRODUCT_NAME']) ? $row['PRODUCT_NAME'] : '';
 			if($productName === '')
 			{
@@ -820,8 +825,32 @@ $jsEventsManagerId = 'PageEventsManager_'.$arResult['COMPONENT_ID'];
                             </span>
                             </td>
                             <td>
-                                <?$productWeight = getProductWeight($productID);
-                                echo $productWeight?>
+                                <?
+                                $productWeight = getProductWeight($productID);
+
+
+
+                                echo $productWeight;
+                                //здесь же определяем, напиток это или еда
+                                if($arResult['OWNER_TYPE'] == 'Q' && $arResult['OWNER_ID'] > 0){
+
+
+                                    $quoteMassiveResult = getPersonsNumber($arResult['OWNER_ID']);
+                                    if($quoteMassiveResult) $personsNum = $quoteMassiveResult[0]['UF_CRM_5B1E4C723A3EA'];
+                                    if($personsNum){
+                                        $drinkOrEatMassive = drinkOrEatProduct($productID);
+                                        if($drinkOrEatMassive['VALUE'] == 332)
+                                            $foodsResult['drinks'] += ($productWeight * $htmlValues['QUANTITY']) / $personsNum;
+                                        else
+                                            $foodsResult['eats'] += ($productWeight * $htmlValues['QUANTITY']) / $personsNum;
+                                    }
+
+                                  //  echo 'Persons: '.$personsNum;
+                                    //print_r($quoteMassiveResult);
+                                }
+
+
+                                ?>
                             </td>
                         </tr>
                         </tbody>
@@ -1178,6 +1207,13 @@ $jsEventsManagerId = 'PageEventsManager_'.$arResult['COMPONENT_ID'];
 					if(isset($arResult['TAX_LIST_PERCENT_PRECISION']))
 						$productEditorCfg['taxListPercentPrecision'] = $arResult['TAX_LIST_PERCENT_PRECISION'];
 				endif;?>
+
+
+
+
+
+
+
 				<tr class="crm-view-table-total-value">
 					<td><nobr><?=htmlspecialcharsbx(GetMessage('CRM_PRODUCT_SUM_TOTAL'))?>:</nobr></td>
 					<td>
@@ -1185,6 +1221,33 @@ $jsEventsManagerId = 'PageEventsManager_'.$arResult['COMPONENT_ID'];
 						<strong id="<?=htmlspecialcharsbx($productEditorCfg['SUM_TOTAL_ID'])?>" class="crm-view-table-total-value"><?=CCrmCurrency::MoneyToString($arResult['TOTAL_SUM'], $arResult['CURRENCY_ID'])?></strong>
 					</td>
 				</tr>
+
+
+                <?
+//                  $foodsResult['drinks'] += ($productWeight * $htmlValues['QUANTITY']) / $personsNum;
+//                  $foodsResult['eats'] += ($productWeight * $htmlValues['QUANTITY']) / $personsNum;
+                ?>
+
+                <?if($foodsResult['eats']):?>
+                <tr class="crm-view-table-total-value">
+                    <td><nobr><?=htmlspecialcharsbx(GetMessage('CRM_EATS_ON_ONE_PERSON'))?>:</nobr></td>
+                    <td>
+                        <?$productEditorCfg['SUM_TOTAL_ID'] = $arResult['PREFIX'].'_sum_total';?>
+                        <strong id="<?=htmlspecialcharsbx($productEditorCfg['SUM_TOTAL_ID'])?>" class="crm-view-table-total-value"><?=$foodsResult['eats'].' гр.'?></strong>
+                    </td>
+                </tr>
+                <?endif;?>
+                <?if($foodsResult['drinks']):?>
+                    <tr class="crm-view-table-total-value">
+                        <td><nobr><?=htmlspecialcharsbx(GetMessage('CRM_DRINKS_ON_ONE_PERSON'))?>:</nobr></td>
+                        <td>
+                            <?$productEditorCfg['SUM_TOTAL_ID'] = $arResult['PREFIX'].'_sum_total';?>
+                            <strong id="<?=htmlspecialcharsbx($productEditorCfg['SUM_TOTAL_ID'])?>" class="crm-view-table-total-value"><?=$foodsResult['drinks'].' мл.'?></strong>
+                        </td>
+                    </tr>
+                <?endif;?>
+
+
 				<?
 				$productEditorCfg['_discountExistsInit'] = $bDiscountExists;
 				$productEditorCfg['_taxExistsInit'] = $bTaxExists;
@@ -1279,3 +1342,8 @@ BX.namespace("BX.Crm");
 BX.Crm["<?=$jsEventsManagerId?>"] = BX.Crm.PageEventsManagerClass.create({id: "<?=$arResult['COMPONENT_ID']?>"});
 
 </script>
+<?
+//echo '<pre>';
+//print_r($drinkOrEatMassive);
+//print_r($foodsResult);
+?>

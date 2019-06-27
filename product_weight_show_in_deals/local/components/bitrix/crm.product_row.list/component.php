@@ -476,3 +476,35 @@ function getProductWeight($productId){
     if($ar_res_weight) $result = $ar_res_weight['WEIGHT'];
     return $result;
 }
+
+function getPersonsNumber($quoteId){
+    $result = false;
+
+    $arFilter = Array('ID' => $quoteId);
+    $arSelect = Array('ID', 'TITLE', 'UF_CRM_5B1E4C723A3EA');
+    $db_list = CCrmQuote::GetList(Array("UF_CRM_1558942845" => "ASC"), $arFilter, false, false, $arSelect, array());
+    while($ar_result = $db_list->GetNext()) {
+        $result[] = $ar_result;
+    }
+
+    return $result;
+}
+
+function drinkOrEatProduct($productId){
+    $result = false;
+    $db_props_res = CIBlockElement::GetProperty(59, $productId, array("sort" => "asc"), Array("CODE"=>"MEASURE_CODE"));
+    if($ar_props_ml = $db_props_res->Fetch()){
+//        if($ar_props_ml['VALUE'] == 332) {
+//            // $rowG_Ml[] = ($vyhod * $quant / $pers);
+//            $result['drinks'] = $ar_props_ml;
+//        } else {
+//            //$rowG[] = ($vyhod * $quant / $pers);
+//            $result['eats'] = $ar_props_ml;
+//        }
+        $result = $ar_props_ml;
+    }
+    return $result;
+}
+
+//echo '<pre>';
+//print_r($arResult);
