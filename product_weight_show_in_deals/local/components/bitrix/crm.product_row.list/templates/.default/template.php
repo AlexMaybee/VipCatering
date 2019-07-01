@@ -803,7 +803,7 @@ $jsEventsManagerId = 'PageEventsManager_'.$arResult['COMPONENT_ID'];
 
                 <?//Custom + Weight?>
                 <td class="crm-item-cell crm-item-name">
-                    <table>
+                    <table style="width: 100%">
                         <tbody>
                         <tr>
                             <td>
